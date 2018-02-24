@@ -19,6 +19,9 @@ public enum Status: String {
 public protocol UserProtocol: Document { }
 public protocol OrganizationProtocol: Document { }
 
+public typealias OrganizationDocument = OrganizationProtocol & Organizable
+public typealias UserDocument = UserProtocol & Joinable
+
 /// The protocol that the document to be invited conforms to.
 public protocol Invitable: Document {
     associatedtype Invitation: InvitationProtocol
@@ -55,15 +58,7 @@ public protocol Organizable: Issuable {
     var peoples: ReferenceCollection<User> { get }
 }
 
-public protocol Followable: Document {
-    associatedtype User: UserProtocol
-    var followers: ReferenceCollection<User> { get }
-    var followees: ReferenceCollection<User> { get }
-}
-
-public typealias OrganizationDocument = OrganizationProtocol & Organizable
-
-public typealias UserDocument = UserProtocol & Joinable
+// MARK: - Invitation
 
 public protocol InvitationProtocol: Document {
     associatedtype Organization: OrganizationDocument
@@ -82,9 +77,9 @@ public extension InvitationProtocol where
 
     public init(userID: String, organizationID: String) {
         self.init(id: organizationID)
-        let invitation: Self = Self(id: organizationID)
-        invitation.userID = userID
-        invitation.organizationID = organizationID
+        self.status = Status.none.rawValue
+        self.userID = userID
+        self.organizationID = organizationID
     }
 
     public func approve(_ block: ((Error?) -> Void)? = nil) {
@@ -104,10 +99,53 @@ public extension InvitationProtocol where
     }
 }
 
-public extension Followable where Self: Object {
+// MARK: - FollowRequest
 
-    public func follow<T: UserProtocol>(from user: T) {
+public protocol Followable: Document {
+    associatedtype User: UserProtocol
+    var followers: ReferenceCollection<User> { get }
+    var followees: ReferenceCollection<User> { get }
+}
 
+public protocol FollowRequestProtocol: Document {
+    associatedtype User: UserProtocol
+    var status: String { get set }
+    var fromID: String { get set }
+    var toID: String { get set }
+    init(fromID: String, toID: String)
+}
+
+public extension FollowRequestProtocol where Self: Object, User: Object, User: Followable, User.User == User {
+
+    public init(fromID: String, toID: String) {
+        self.init(id: fromID)
+        self.status = Status.none.rawValue
+        self.fromID = fromID
+        self.toID = toID
     }
 
+    public func approve(_ block: ((Error?) -> Void)? = nil) {
+        self.status = Status.approved.rawValue
+        let follower: User = User(id: self.fromID, value: [:])
+        let followee: User = User(id: self.toID, value: [:])
+        follower.followees.insert(followee)
+        followee.followers.insert(follower)
+        let batch: WriteBatch = Firestore.firestore().batch()
+        follower.pack(.update, batch: batch)
+        self.update(batch, block: block)
+    }
+
+    public func reject(_ block: ((Error?) -> Void)? = nil) {
+        self.status = Status.rejected.rawValue
+        self.update(block)
+    }
+}
+
+public extension Followable where Self: Object, User: Followable, User == Self {
+
+    public func follow(from user: User, block: ((Error?) -> Void)? = nil) {
+        self.followers.insert(user)
+        user.followees.insert(self)
+        self.update(block)
+    }
 }
