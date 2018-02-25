@@ -10,8 +10,10 @@
 		12DFEEC8204156BE000EB3D3 /* Socialbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DFEEC7204156BE000EB3D3 /* Socialbase.swift */; };
 		12DFEED62041B80F000EB3D3 /* SocialbaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DFEED52041B80F000EB3D3 /* SocialbaseTests.swift */; };
 		12DFEED82041B80F000EB3D3 /* Socialbase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12E14D12204155C8002CFDEA /* Socialbase.framework */; };
-		12DFEEDF2041B82C000EB3D3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 12DFEEDE2041B82C000EB3D3 /* GoogleService-Info.plist */; };
 		12DFEEE12041B8C0000EB3D3 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DFEEE02041B8C0000EB3D3 /* User.swift */; };
+		12DFEEE32041C0A3000EB3D3 /* Invitation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DFEEE22041C0A3000EB3D3 /* Invitation.swift */; };
+		12DFEEE620425CA6000EB3D3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 12DFEEE520425CA6000EB3D3 /* GoogleService-Info.plist */; };
+		12DFEEE720425FAA000EB3D3 /* Socialbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DFEEC7204156BE000EB3D3 /* Socialbase.swift */; };
 		12E14D17204155C8002CFDEA /* Socialbase.h in Headers */ = {isa = PBXBuildFile; fileRef = 12E14D15204155C8002CFDEA /* Socialbase.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1DFF8ABC2877AFB188A3D6E2 /* Pods_SocialbaseTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 612FC01814E0B1A1FCE68EB8 /* Pods_SocialbaseTests.framework */; };
 		70CAC28919558F0C14229D3B /* Pods_Socialbase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEA75425C7CF2939432665D0 /* Pods_Socialbase.framework */; };
@@ -32,8 +34,9 @@
 		12DFEED32041B80F000EB3D3 /* SocialbaseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SocialbaseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		12DFEED52041B80F000EB3D3 /* SocialbaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialbaseTests.swift; sourceTree = "<group>"; };
 		12DFEED72041B80F000EB3D3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		12DFEEDE2041B82C000EB3D3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		12DFEEE02041B8C0000EB3D3 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		12DFEEE22041C0A3000EB3D3 /* Invitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invitation.swift; sourceTree = "<group>"; };
+		12DFEEE520425CA6000EB3D3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		12E14D12204155C8002CFDEA /* Socialbase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Socialbase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		12E14D15204155C8002CFDEA /* Socialbase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Socialbase.h; sourceTree = "<group>"; };
 		12E14D16204155C8002CFDEA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -69,9 +72,10 @@
 		12DFEED42041B80F000EB3D3 /* SocialbaseTests */ = {
 			isa = PBXGroup;
 			children = (
-				12DFEEDE2041B82C000EB3D3 /* GoogleService-Info.plist */,
+				12DFEEE520425CA6000EB3D3 /* GoogleService-Info.plist */,
 				12DFEED52041B80F000EB3D3 /* SocialbaseTests.swift */,
 				12DFEEE02041B8C0000EB3D3 /* User.swift */,
+				12DFEEE22041C0A3000EB3D3 /* Invitation.swift */,
 				12DFEED72041B80F000EB3D3 /* Info.plist */,
 			);
 			path = SocialbaseTests;
@@ -226,7 +230,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				12DFEEDF2041B82C000EB3D3 /* GoogleService-Info.plist in Resources */,
+				12DFEEE620425CA6000EB3D3 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,7 +354,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				12DFEEE12041B8C0000EB3D3 /* User.swift in Sources */,
+				12DFEEE720425FAA000EB3D3 /* Socialbase.swift in Sources */,
 				12DFEED62041B80F000EB3D3 /* SocialbaseTests.swift in Sources */,
+				12DFEEE32041C0A3000EB3D3 /* Invitation.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -16,78 +16,113 @@ public enum Status: String {
     case rejected   = "rejected"
 }
 
-public typealias Socialbase = OrganizationDocument & UserDocument
+public enum UserType: String {
+    case none           = "none"
+    case individual     = "individual"
+    case organization   = "rganization"
+}
 
-public protocol UserProtocol: Document { }
-public protocol OrganizationProtocol: Document { }
+//public typealias Socialbase = OrganizationDocument & UserDocument
+//
+//public protocol UserProtocol: Document { }
+//public protocol OrganizationProtocol: Document { }
 
-public typealias OrganizationDocument = OrganizationProtocol & Organizable
-public typealias UserDocument = UserProtocol & Joinable
+//public typealias OrganizationDocument = OrganizationProtocol & Organizable
+//public typealias UserDocument = UserProtocol & Joinable
+//
+///// The protocol that the document to be invited conforms to.
+//public protocol Invitable: Document {
+//    associatedtype Request: InvitationProtocol
+//    var invitations: DataSource<Request>.Query { get }
+//}
+//
+//extension Invitable {
+//    public var invitations: DataSource<Request>.Query {
+//        return Request.query.where(\Request.toID, isEqualTo: self.id)
+//    }
+//}
+//
+///// The protocol to which the document issuing the invitation should conform.
+//public protocol Issuable: Document {
+//    associatedtype Request: InvitationProtocol
+//    var issuedInvitations: DataSource<Request>.Query { get }
+//}
+//
+//extension Issuable {
+//    public var issuedInvitations: DataSource<Request>.Query {
+//        return Request.query.where(\Request.fromID, isEqualTo: self.id)
+//    }
+//}
+//
+///// The protocol that the Document that can participate in the organization should conform.
+//public protocol Joinable: Invitable {
+//    associatedtype Organization: OrganizationProtocol
+//    var organizations: ReferenceCollection<Organization> { get }
+//}
+//
+///// Protocol to which an organizable Document should conform.
+//public protocol Organizable: Issuable {
+//    associatedtype People: UserProtocol
+//    var peoples: ReferenceCollection<People> { get }
+//}
+
+// MARK: - Request
+
+/// Protocol to which the request document should conform.
+public protocol RequestProtocol: Document {
+    var status: String { get set }
+    var fromID: String { get set }
+    var toID: String { get set }
+    var message: String? { get set }
+    init(fromID: String, toID: String)
+}
+
+public extension RequestProtocol {
+
+    public init(fromID: String, toID: String) {
+        self.init(id: fromID)
+        self.status = Status.none.rawValue
+        self.fromID = fromID
+        self.toID = toID
+    }
+}
+
+// MARK: - Organization
+
+/// Protocol to which an organizable Document should conform.
+public protocol Organizable: Document {
+    var name: String { get set }
+    var type: String { get set }
+    var peoples: ReferenceCollection<Self> { get }
+    var organizations: ReferenceCollection<Self> { get }
+}
+
+public protocol InvitationProtocol: RequestProtocol {
+    associatedtype Element: Organizable
+}
 
 /// The protocol that the document to be invited conforms to.
 public protocol Invitable: Document {
     associatedtype Invitation: InvitationProtocol
     var invitations: DataSource<Invitation>.Query { get }
+    var issuedInvitations: DataSource<Invitation>.Query { get }
 }
 
 extension Invitable {
     public var invitations: DataSource<Invitation>.Query {
-        return Invitation.query.where(\Invitation.userID, isEqualTo: self.id)
+        return Invitation.query.where("toID", isEqualTo: self.id)
     }
-}
-
-/// The protocol to which the document issuing the invitation should conform.
-public protocol Issuable: Document {
-    associatedtype Invitation: InvitationProtocol
-    var issuedInvitations: DataSource<Invitation>.Query { get }
-}
-
-extension Issuable {
     public var issuedInvitations: DataSource<Invitation>.Query {
-        return Invitation.query.where(\Invitation.organizationID, isEqualTo: self.id)
+        return Invitation.query.where("fromID", isEqualTo: self.id)
     }
 }
 
-/// The protocol that the Document that can participate in the organization should conform.
-public protocol Joinable: Invitable {
-    associatedtype Organization: OrganizationProtocol
-    var organizations: ReferenceCollection<Organization> { get }
-}
-
-/// Protocol to which an organizable Document should conform.
-public protocol Organizable: Issuable {
-    associatedtype People: UserProtocol
-    var peoples: ReferenceCollection<People> { get }
-}
-
-// MARK: - Invitation
-
-public protocol InvitationProtocol: Document {
-    associatedtype Organization: OrganizationDocument
-    associatedtype People: UserDocument
-    var status: String { get set }
-    var message: String { get set }
-    var userID: String { get set }
-    var organizationID: String { get set }
-    init(userID: String, organizationID: String)
-}
-
-public extension InvitationProtocol where
-    Self: Object, Organization: Object, People: Object,
-    Organization.People == People, People.Organization == Organization,
-    Organization.Invitation == Self, People.Invitation == Self {
-
-    public init(userID: String, organizationID: String) {
-        self.init(id: organizationID)
-        self.status = Status.none.rawValue
-        self.userID = userID
-        self.organizationID = organizationID
-    }
+public extension InvitationProtocol where Self: Object {
 
     public func approve(_ block: ((Error?) -> Void)? = nil) {
         self.status = Status.approved.rawValue
-        let organization: Organization = Organization(id: self.id, value: [:])
-        let user: People = People(id: self.userID, value: [:])
+        let organization: Element = Element(id: self.id, value: [:])
+        let user: Element = Element(id: self.toID, value: [:])
         organization.peoples.insert(user)
         user.organizations.insert(organization)
         let batch: WriteBatch = Firestore.firestore().batch()
@@ -101,35 +136,23 @@ public extension InvitationProtocol where
     }
 }
 
-// MARK: - FollowRequest
+// MARK: - Follow
 
 public protocol Followable: Document {
-    associatedtype User: UserProtocol
-    var followers: ReferenceCollection<User> { get }
-    var followees: ReferenceCollection<User> { get }
+    var followers: ReferenceCollection<Self> { get }
+    var followees: ReferenceCollection<Self> { get }
 }
 
-public protocol FollowRequestProtocol: Document {
-    associatedtype User: UserProtocol
-    var status: String { get set }
-    var fromID: String { get set }
-    var toID: String { get set }
-    init(fromID: String, toID: String)
+public protocol FollowRequestProtocol: RequestProtocol {
+    associatedtype Element: Followable
 }
 
-public extension FollowRequestProtocol where Self: Object, User: Object, User: Followable, User.User == User {
-
-    public init(fromID: String, toID: String) {
-        self.init(id: fromID)
-        self.status = Status.none.rawValue
-        self.fromID = fromID
-        self.toID = toID
-    }
+public extension FollowRequestProtocol where Self: Object {
 
     public func approve(_ block: ((Error?) -> Void)? = nil) {
         self.status = Status.approved.rawValue
-        let follower: User = User(id: self.fromID, value: [:])
-        let followee: User = User(id: self.toID, value: [:])
+        let follower: Element = Element(id: self.fromID, value: [:])
+        let followee: Element = Element(id: self.toID, value: [:])
         follower.followees.insert(followee)
         followee.followers.insert(follower)
         let batch: WriteBatch = Firestore.firestore().batch()
@@ -143,9 +166,9 @@ public extension FollowRequestProtocol where Self: Object, User: Object, User: F
     }
 }
 
-public extension Followable where Self: Object, User: Followable, User == Self {
+public extension Followable where Self: Object {
 
-    public func follow(from user: User, block: ((Error?) -> Void)? = nil) {
+    public func follow(from user: Self, block: ((Error?) -> Void)? = nil) {
         self.followers.insert(user)
         user.followees.insert(self)
         self.update(block)

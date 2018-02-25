@@ -12,9 +12,19 @@ import Pring
 import Socialbase
 
 @objcMembers
-class User: Object {
-    typealias Organization = User
-    typealias People = User
-    var organizations: ReferenceCollection<Organization> = []
+final class User: Object, Followable, Organizable {
+
+    dynamic var name: String = ""
+
+    var type: String = UserType.none.rawValue
+    
+    var organizations: ReferenceCollection<User> = []
     var peoples: ReferenceCollection<User> = []
+
+    var followers: ReferenceCollection<User> = []
+    var followees: ReferenceCollection<User> = []
+}
+
+extension User: Invitable {
+    typealias Invitation = Test.Invitation
 }
