@@ -39,6 +39,7 @@
 		12DFEEE22041C0A3000EB3D3 /* Invitation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Invitation.swift; sourceTree = "<group>"; };
 		12DFEEE520425CA6000EB3D3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		12DFEEE8204273AF000EB3D3 /* FollowRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowRequest.swift; sourceTree = "<group>"; };
+		12DFEEEA204278E7000EB3D3 /* Socialbase.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = Socialbase.podspec; sourceTree = "<group>"; };
 		12E14D12204155C8002CFDEA /* Socialbase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Socialbase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		12E14D15204155C8002CFDEA /* Socialbase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Socialbase.h; sourceTree = "<group>"; };
 		12E14D16204155C8002CFDEA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -87,6 +88,7 @@
 		12E14D08204155C8002CFDEA = {
 			isa = PBXGroup;
 			children = (
+				12DFEEEA204278E7000EB3D3 /* Socialbase.podspec */,
 				12E14D14204155C8002CFDEA /* Socialbase */,
 				12DFEED42041B80F000EB3D3 /* SocialbaseTests */,
 				12E14D13204155C8002CFDEA /* Products */,
