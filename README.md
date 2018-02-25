@@ -77,8 +77,8 @@ extension Test {
 Invite users to your organization.
 
 ```swift
-let user0: User = User(id: "user0", value: [:])
-let user0: User = User(id: "user1", value: [:])
+let user0: User = User(id: "user0", value: [:]) // Organization user
+let user1: User = User(id: "user1", value: [:])
 let invitation: Test.Invitation = Test.Invitation(fromID: user0.id, toID: user1.id)
 invitation.save()
 ```
