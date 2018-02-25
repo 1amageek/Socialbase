@@ -22,49 +22,7 @@ public enum UserType: String {
     case organization   = "rganization"
 }
 
-//public typealias Socialbase = OrganizationDocument & UserDocument
-//
-//public protocol UserProtocol: Document { }
-//public protocol OrganizationProtocol: Document { }
-
-//public typealias OrganizationDocument = OrganizationProtocol & Organizable
-//public typealias UserDocument = UserProtocol & Joinable
-//
-///// The protocol that the document to be invited conforms to.
-//public protocol Invitable: Document {
-//    associatedtype Request: InvitationProtocol
-//    var invitations: DataSource<Request>.Query { get }
-//}
-//
-//extension Invitable {
-//    public var invitations: DataSource<Request>.Query {
-//        return Request.query.where(\Request.toID, isEqualTo: self.id)
-//    }
-//}
-//
-///// The protocol to which the document issuing the invitation should conform.
-//public protocol Issuable: Document {
-//    associatedtype Request: InvitationProtocol
-//    var issuedInvitations: DataSource<Request>.Query { get }
-//}
-//
-//extension Issuable {
-//    public var issuedInvitations: DataSource<Request>.Query {
-//        return Request.query.where(\Request.fromID, isEqualTo: self.id)
-//    }
-//}
-//
-///// The protocol that the Document that can participate in the organization should conform.
-//public protocol Joinable: Invitable {
-//    associatedtype Organization: OrganizationProtocol
-//    var organizations: ReferenceCollection<Organization> { get }
-//}
-//
-///// Protocol to which an organizable Document should conform.
-//public protocol Organizable: Issuable {
-//    associatedtype People: UserProtocol
-//    var peoples: ReferenceCollection<People> { get }
-//}
+public typealias Socialbase = Organizable & Invitable & Followable & FollowRequestable
 
 // MARK: - Request
 
@@ -141,6 +99,22 @@ public extension InvitationProtocol where Self: Object {
 public protocol Followable: Document {
     var followers: ReferenceCollection<Self> { get }
     var followees: ReferenceCollection<Self> { get }
+}
+
+/// The protocol that the document to be invited conforms to.
+public protocol FollowRequestable: Document {
+    associatedtype FollowRequest: FollowRequestProtocol
+    var followRequests: DataSource<FollowRequest>.Query { get }
+    var issuedFollowRequests: DataSource<FollowRequest>.Query { get }
+}
+
+extension FollowRequestable {
+    public var followRequests: DataSource<FollowRequest>.Query {
+        return FollowRequest.query.where("toID", isEqualTo: self.id)
+    }
+    public var issuedFollowRequests: DataSource<FollowRequest>.Query {
+        return FollowRequest.query.where("fromID", isEqualTo: self.id)
+    }
 }
 
 public protocol FollowRequestProtocol: RequestProtocol {

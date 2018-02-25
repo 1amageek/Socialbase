@@ -12,7 +12,7 @@ import Pring
 import Socialbase
 
 @objcMembers
-final class User: Object, Followable, Organizable {
+final class User: Object, Socialbase {
 
     dynamic var name: String = ""
 
@@ -25,6 +25,9 @@ final class User: Object, Followable, Organizable {
     var followees: ReferenceCollection<User> = []
 }
 
-extension User: Invitable {
+extension User {
     typealias Invitation = Test.Invitation
+}
+extension User {
+    typealias FollowRequest = Test.FollowRequest
 }

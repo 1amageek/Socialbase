@@ -109,8 +109,7 @@ class SocialbaseTests: XCTestCase {
         user0.save { (_, _) in
             user1.save { (_, _) in
                 let invitation: Test.Invitation = Test.Invitation(fromID: user0.id, toID: user1.id)
-                invitation.save { (_, _) in
-                    user0.issuedInvitations.dataSource().onCompleted({ (_, invitations) in
+                invitation.save { (_, _) in                    user0.issuedInvitations.dataSource().onCompleted({ (_, invitations) in
                         let invitation = invitations.first
                         XCTAssertEqual(invitation?.fromID, user0.id)
                         user1.invitations.dataSource().onCompleted({ (_, invitations) in
@@ -119,6 +118,105 @@ class SocialbaseTests: XCTestCase {
                             expectation.fulfill()
                         }).get()
                     }).get()
+                }
+            }
+        }
+        self.wait(for: [expectation], timeout: 10)
+    }
+
+    func testFollowable() {
+        let expectation: XCTestExpectation = XCTestExpectation()
+        let user0: User = User()
+        let user1: User = User()
+        user0.name = "user0"
+        user0.type = UserType.organization.rawValue
+        user1.name = "user1"
+        user0.save { (_, _) in
+            user1.save { (_, _) in
+                user1.follow(from: user0, block: { _ in
+                    user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
+                        let user: User = users.first!
+                        XCTAssertEqual(user.id, user0.id)
+                        user0.followees.query.dataSource().onCompleted({ (snapshot, users) in
+                            let user: User = users.first!
+                            XCTAssertEqual(user.id, user1.id)
+                            user0.delete()
+                            user1.delete()
+                            expectation.fulfill()
+                        }).get()
+                    }).get()
+                })
+            }
+        }
+        self.wait(for: [expectation], timeout: 15)
+    }
+
+    func testFollowableWhenRequestApproved() {
+        let expectation: XCTestExpectation = XCTestExpectation()
+        let user0: User = User()
+        let user1: User = User()
+        user0.name = "user0"
+        user0.type = UserType.organization.rawValue
+        user1.name = "user1"
+        user0.save { (_, _) in
+            user1.save { (_, _) in
+                let request: Test.FollowRequest = Test.FollowRequest(fromID: user0.id, toID: user1.id)
+                request.save { (_, _) in
+                    Test.FollowRequest.get(user0.id, block: { (request, error) in
+                        XCTAssertEqual(request?.fromID, user0.id)
+                        XCTAssertEqual(request?.toID, user1.id)
+                        XCTAssertEqual(request?.status, Status.none.rawValue)
+                        request?.approve { _ in
+                            Test.FollowRequest.get(user0.id, block: { (invitation, error) in
+                                XCTAssertEqual(request?.fromID, user0.id)
+                                XCTAssertEqual(request?.toID, user1.id)
+                                XCTAssertEqual(request?.status, Status.approved.rawValue)
+                                user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
+                                    let user: User = users.first!
+                                    XCTAssertEqual(user.id, user0.id)
+                                    user0.followees.query.dataSource().onCompleted({ (snapshot, users) in
+                                        let user: User = users.first!
+                                        XCTAssertEqual(user.id, user1.id)
+                                        user0.delete()
+                                        user1.delete()
+                                        expectation.fulfill()
+                                    }).get()
+                                }).get()
+                            })
+                        }
+                    })
+                }
+            }
+        }
+        self.wait(for: [expectation], timeout: 15)
+    }
+
+    func testFollowableWhenRequestRejected() {
+        let expectation: XCTestExpectation = XCTestExpectation()
+        let user0: User = User()
+        let user1: User = User()
+        user0.name = "user0"
+        user0.type = UserType.organization.rawValue
+        user1.name = "user1"
+        user0.save { (_, _) in
+            user1.save { (_, _) in
+                let request: Test.FollowRequest = Test.FollowRequest(fromID: user0.id, toID: user1.id)
+                request.save { (_, _) in
+                    Test.FollowRequest.get(user0.id, block: { (request, error) in
+                        XCTAssertEqual(request?.fromID, user0.id)
+                        XCTAssertEqual(request?.toID, user1.id)
+                        XCTAssertEqual(request?.status, Status.none.rawValue)
+                        request?.reject { _ in
+                            Test.FollowRequest.get(user0.id, block: { (invitation, error) in
+                                XCTAssertEqual(request?.fromID, user0.id)
+                                XCTAssertEqual(request?.toID, user1.id)
+                                XCTAssertEqual(request?.status, Status.rejected.rawValue)
+                                user0.delete()
+                                user1.delete()
+                                expectation.fulfill()
+                            })
+                        }
+                    })
                 }
             }
         }
