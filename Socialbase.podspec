@@ -23,4 +23,5 @@ Socialbase is a framework for building SNS in Cloud Firestore.
   s.dependency "Firebase/Core"
   s.dependency "Firebase/Firestore"
   s.dependency "Firebase/Storage"
+  s.dependency "Pring"
 end
