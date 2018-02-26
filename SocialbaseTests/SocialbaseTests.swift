@@ -140,8 +140,15 @@ class SocialbaseTests: XCTestCase {
                         user0.followees.query.dataSource().onCompleted({ (snapshot, users) in
                             let user: User = users.first!
                             XCTAssertEqual(user.id, user1.id)
-                            user0.delete()
-                            user1.delete()
+                            user1.unfollow(from: user0, block: { (_) in
+                                user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
+                                    XCTAssertEqual(users.count, 0)
+                                    user0.followees.query.dataSource().onCompleted({ (snapshot, users) in
+                                        XCTAssertEqual(users.count, 0)
+                                        expectation.fulfill()
+                                    }).get()
+                                }).get()
+                            })
                             expectation.fulfill()
                         }).get()
                     }).get()

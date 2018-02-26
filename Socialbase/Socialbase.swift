@@ -147,4 +147,10 @@ public extension Followable where Self: Object {
         user.followees.insert(self)
         self.update(block)
     }
+
+    public func unfollow(from user: Self, block: ((Error?) -> Void)? = nil) {
+        self.followers.delete(id: user.id)
+        user.followees.delete(id: self.id)
+        self.update(block)
+    }
 }
