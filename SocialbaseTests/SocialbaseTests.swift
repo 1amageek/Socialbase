@@ -134,24 +134,35 @@ class SocialbaseTests: XCTestCase {
         user0.save { (_, _) in
             user1.save { (_, _) in
                 user1.follow(from: user0, block: { _, _ in
-                    user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
-                        let user: User = users.first!
-                        XCTAssertEqual(user.id, user0.id)
-                        user0.following.query.dataSource().onCompleted({ (snapshot, users) in
-                            let user: User = users.first!
-                            XCTAssertEqual(user.id, user1.id)
-                            user1.unfollow(from: user0, block: { _, _ in
-                                user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
-                                    XCTAssertEqual(users.count, 0)
-                                    user0.following.query.dataSource().onCompleted({ (snapshot, users) in
-                                        XCTAssertEqual(users.count, 0)
-                                        expectation.fulfill()
-                                    }).get()
+                    User.get(user0.id, block: { (_user0, _) in
+                        XCTAssertEqual(_user0!.followingCount, 1)
+                        User.get(user1.id, block: { (_user1, _) in
+                            XCTAssertEqual(_user1!.followersCount, 1)
+                            user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
+                                let user: User = users.first!
+                                XCTAssertEqual(user.id, user0.id)
+                                user0.following.query.dataSource().onCompleted({ (snapshot, users) in
+                                    let user: User = users.first!
+                                    XCTAssertEqual(user.id, user1.id)
+                                    user1.unfollow(from: user0, block: { _, _ in
+                                        User.get(user0.id, block: { (_user0, _) in
+                                            XCTAssertEqual(_user0!.followingCount, 0)
+                                            User.get(user1.id, block: { (_user1, _) in
+                                                XCTAssertEqual(_user1!.followersCount, 0)
+                                                user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
+                                                    XCTAssertEqual(users.count, 0)
+                                                    user0.following.query.dataSource().onCompleted({ (snapshot, users) in
+                                                        XCTAssertEqual(users.count, 0)
+                                                        expectation.fulfill()
+                                                    }).get()
+                                                }).get()
+                                            })
+                                        })
+                                    })
                                 }).get()
-                            })
-                            expectation.fulfill()
-                        }).get()
-                    }).get()
+                            }).get()
+                        })
+                    })
                 })
             }
         }
