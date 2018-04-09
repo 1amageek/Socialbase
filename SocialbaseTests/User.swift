@@ -13,16 +13,14 @@ import Socialbase
 
 @objcMembers
 final class User: Object, Socialbase {
-
     dynamic var name: String = ""
-
     var type: String = UserType.none.rawValue
-    
+    var followersCount: Int = 0
+    var followingCount: Int = 0
     var organizations: ReferenceCollection<User> = []
     var peoples: ReferenceCollection<User> = []
-
     var followers: ReferenceCollection<User> = []
-    var followees: ReferenceCollection<User> = []
+    var following: ReferenceCollection<User> = []
 }
 
 extension User {

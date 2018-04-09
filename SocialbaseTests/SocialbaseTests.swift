@@ -133,17 +133,17 @@ class SocialbaseTests: XCTestCase {
         user1.name = "user1"
         user0.save { (_, _) in
             user1.save { (_, _) in
-                user1.follow(from: user0, block: { _ in
+                user1.follow(from: user0, block: { _, _ in
                     user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
                         let user: User = users.first!
                         XCTAssertEqual(user.id, user0.id)
-                        user0.followees.query.dataSource().onCompleted({ (snapshot, users) in
+                        user0.following.query.dataSource().onCompleted({ (snapshot, users) in
                             let user: User = users.first!
                             XCTAssertEqual(user.id, user1.id)
-                            user1.unfollow(from: user0, block: { (_) in
+                            user1.unfollow(from: user0, block: { _, _ in
                                 user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
                                     XCTAssertEqual(users.count, 0)
-                                    user0.followees.query.dataSource().onCompleted({ (snapshot, users) in
+                                    user0.following.query.dataSource().onCompleted({ (snapshot, users) in
                                         XCTAssertEqual(users.count, 0)
                                         expectation.fulfill()
                                     }).get()
@@ -181,7 +181,7 @@ class SocialbaseTests: XCTestCase {
                                 user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
                                     let user: User = users.first!
                                     XCTAssertEqual(user.id, user0.id)
-                                    user0.followees.query.dataSource().onCompleted({ (snapshot, users) in
+                                    user0.following.query.dataSource().onCompleted({ (snapshot, users) in
                                         let user: User = users.first!
                                         XCTAssertEqual(user.id, user1.id)
                                         user0.delete()
