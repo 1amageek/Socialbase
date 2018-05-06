@@ -28,9 +28,10 @@ public typealias Socialbase = Organizable & Invitable & Followable & FollowReque
 
 /// Protocol to which the request document should conform.
 public protocol RequestProtocol: Document {
+    associatedtype Element: Document
     var status: String { get set }
-    var fromID: String { get set }
-    var toID: String { get set }
+    var from: Relation<Element> { get set }
+    var to: Relation<Element> { get set }
     var message: String? { get set }
     init(fromID: String, toID: String)
 }
@@ -40,8 +41,8 @@ public extension RequestProtocol {
     public init(fromID: String, toID: String) {
         self.init(id: fromID)
         self.status = Status.none.rawValue
-        self.fromID = fromID
-        self.toID = toID
+        self.from.set(Element(id: fromID, value: [:]))
+        self.to.set(Element(id: toID, value: [:]))
     }
 }
 
@@ -55,8 +56,8 @@ public protocol Organizable: Document {
     var organizations: ReferenceCollection<Self> { get }
 }
 
-public protocol InvitationProtocol: RequestProtocol {
-    associatedtype Element: Organizable
+public protocol InvitationProtocol: RequestProtocol where Element: Organizable {
+
 }
 
 /// The protocol that the document to be invited conforms to.
@@ -68,10 +69,10 @@ public protocol Invitable: Document {
 
 extension Invitable {
     public var invitations: DataSource<Invitation>.Query {
-        return Invitation.query.where("toID", isEqualTo: self.id)
+        return Invitation.query.where("to", isEqualTo: self.id)
     }
     public var issuedInvitations: DataSource<Invitation>.Query {
-        return Invitation.query.where("fromID", isEqualTo: self.id)
+        return Invitation.query.where("from", isEqualTo: self.id)
     }
 }
 
@@ -80,7 +81,7 @@ public extension InvitationProtocol where Self: Object {
     public func approve(_ block: ((Error?) -> Void)? = nil) {
         self.status = Status.approved.rawValue
         let organization: Element = Element(id: self.id, value: [:])
-        let user: Element = Element(id: self.toID, value: [:])
+        let user: Element = Element(id: self.to.id!, value: [:])
         organization.peoples.insert(user)
         user.organizations.insert(organization)
         let batch: WriteBatch = Firestore.firestore().batch()
@@ -112,23 +113,23 @@ public protocol FollowRequestable: Document {
 
 extension FollowRequestable {
     public var followRequests: DataSource<FollowRequest>.Query {
-        return FollowRequest.query.where("toID", isEqualTo: self.id)
+        return FollowRequest.query.where("to", isEqualTo: self.id)
     }
     public var issuedFollowRequests: DataSource<FollowRequest>.Query {
-        return FollowRequest.query.where("fromID", isEqualTo: self.id)
+        return FollowRequest.query.where("from", isEqualTo: self.id)
     }
 }
 
-public protocol FollowRequestProtocol: RequestProtocol {
-    associatedtype Element: Followable
+public protocol FollowRequestProtocol: RequestProtocol where Element: Followable {
+
 }
 
 public extension FollowRequestProtocol where Self: Object {
 
     public func approve(_ block: ((Error?) -> Void)? = nil) {
         self.status = Status.approved.rawValue
-        let follower: Element = Element(id: self.fromID, value: [:])
-        let followee: Element = Element(id: self.toID, value: [:])
+        let follower: Element = Element(id: self.from.id!, value: [:])
+        let followee: Element = Element(id: self.to.id!, value: [:])
         follower.following.insert(followee)
         followee.followers.insert(follower)
         let batch: WriteBatch = Firestore.firestore().batch()

@@ -17,7 +17,7 @@ extension Test {
         typealias Element = User
         dynamic var status: String = Status.none.rawValue
         dynamic var message: String?
-        dynamic var toID: String = ""
-        dynamic var fromID: String = ""
+        dynamic var to: Relation<Element> = .init()
+        dynamic var from: Relation<Element> = .init()
     }
 }
