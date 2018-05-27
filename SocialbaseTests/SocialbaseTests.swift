@@ -46,21 +46,27 @@ class SocialbaseTests: XCTestCase {
             user1.save { (_, _) in
                 let invitation: Test.Invitation = Test.Invitation(fromID: user0.id, toID: user1.id)
                 invitation.save { (_, _) in
-                    Test.Invitation.get(user0.id, block: { (invitation, error) in
-                        XCTAssertEqual(invitation?.from.id, user0.id)
-                        XCTAssertEqual(invitation?.to.id, user1.id)
-                        XCTAssertEqual(invitation?.status, Status.none.rawValue)
-                        invitation?.approve { _ in
-                            Test.Invitation.get(user0.id, block: { (invitation, error) in
-                                XCTAssertEqual(invitation?.from.id, user0.id)
-                                XCTAssertEqual(invitation?.to.id, user1.id)
-                                XCTAssertEqual(invitation?.status, Status.approved.rawValue)
-                                user0.delete()
-                                user1.delete()
-                                expectation.fulfill()
-                            })
-                        }
-                    })
+                    Test.Invitation
+                        .where("from", isEqualTo: user0.id)
+                        .where("to", isEqualTo: user1.id)
+                        .get(completion: { (snapshot, _) in
+                            let document = snapshot?.documents.first
+                            let invitation: Test.Invitation = Test.Invitation(snapshot: document!)!
+                            XCTAssertEqual(invitation.from.id, user0.id)
+                            XCTAssertEqual(invitation.to.id, user1.id)
+                            XCTAssertEqual(invitation.of.id, user0.id)
+                            invitation.approve { _ in
+                                Test.Invitation.get(invitation.id, block: { (invitation, error) in
+                                    XCTAssertEqual(invitation?.from.id, user0.id)
+                                    XCTAssertEqual(invitation?.to.id, user1.id)
+                                    XCTAssertEqual(invitation?.of.id, user0.id)
+                                    XCTAssertEqual(invitation?.status, Status.approved.rawValue)
+                                    user0.delete()
+                                    user1.delete()
+                                    expectation.fulfill()
+                                })
+                            }
+                        })
                 }
             }
         }
@@ -78,21 +84,62 @@ class SocialbaseTests: XCTestCase {
             user1.save { (_, _) in
                 let invitation: Test.Invitation = Test.Invitation(fromID: user0.id, toID: user1.id)
                 invitation.save { (_, _) in
-                    Test.Invitation.get(user0.id, block: { (invitation, error) in
-                        XCTAssertEqual(invitation?.from.id, user0.id)
-                        XCTAssertEqual(invitation?.to.id, user1.id)
-                        XCTAssertEqual(invitation?.status, Status.none.rawValue)
-                        invitation?.reject { _ in
-                            Test.Invitation.get(user0.id, block: { (invitation, error) in
-                                XCTAssertEqual(invitation?.from.id, user0.id)
-                                XCTAssertEqual(invitation?.to.id, user1.id)
-                                XCTAssertEqual(invitation?.status, Status.rejected.rawValue)
-                                user0.delete()
-                                user1.delete()
-                                expectation.fulfill()
-                            })
-                        }
-                    })
+                    Test.Invitation
+                        .where("from", isEqualTo: user0.id)
+                        .where("to", isEqualTo: user1.id)
+                        .get(completion: { (snapshot, _) in
+                            let document = snapshot?.documents.first
+                            let invitation: Test.Invitation = Test.Invitation(snapshot: document!)!
+                            XCTAssertEqual(invitation.from.id, user0.id)
+                            XCTAssertEqual(invitation.to.id, user1.id)
+                            XCTAssertEqual(invitation.of.id, user0.id)
+                            invitation.reject { _ in
+                                Test.Invitation.get(invitation.id, block: { (invitation, error) in
+                                    XCTAssertEqual(invitation?.from.id, user0.id)
+                                    XCTAssertEqual(invitation?.to.id, user1.id)
+                                    XCTAssertEqual(invitation?.of.id, user0.id)
+                                    XCTAssertEqual(invitation?.status, Status.rejected.rawValue)
+                                    user0.delete()
+                                    user1.delete()
+                                    expectation.fulfill()
+                                })
+                            }
+                        })
+                }
+            }
+        }
+        self.wait(for: [expectation], timeout: 10)
+    }
+
+    func testOrganizableWhenInvitationCancelled() {
+        let expectation: XCTestExpectation = XCTestExpectation()
+        let user0: User = User()
+        let user1: User = User()
+        user0.name = "user0"
+        user0.type = UserType.organization.rawValue
+        user1.name = "user1"
+        user0.save { (_, _) in
+            user1.save { (_, _) in
+                let invitation: Test.Invitation = Test.Invitation(fromID: user0.id, toID: user1.id)
+                invitation.save { (_, _) in
+                    Test.Invitation
+                        .where("from", isEqualTo: user0.id)
+                        .where("to", isEqualTo: user1.id)
+                        .get(completion: { (snapshot, _) in
+                            let document = snapshot?.documents.first
+                            let invitation: Test.Invitation = Test.Invitation(snapshot: document!)!
+                            XCTAssertEqual(invitation.from.id, user0.id)
+                            XCTAssertEqual(invitation.to.id, user1.id)
+                            XCTAssertEqual(invitation.of.id, user0.id)
+                            invitation.cancel { _ in
+                                Test.Invitation.get(invitation.id, block: { (invitation, error) in
+                                    XCTAssertNil(invitation, "Cancelled")
+                                    user0.delete()
+                                    user1.delete()
+                                    expectation.fulfill()
+                                })
+                            }
+                        })
                 }
             }
         }
@@ -109,10 +156,11 @@ class SocialbaseTests: XCTestCase {
         user0.save { (_, _) in
             user1.save { (_, _) in
                 let invitation: Test.Invitation = Test.Invitation(fromID: user0.id, toID: user1.id)
-                invitation.save { (_, _) in                    user0.issuedInvitations.dataSource().onCompleted({ (_, invitations) in
+                invitation.save { (_, _) in
+                    user0.issuedInvitations.dataSource().onCompleted({ (_, invitations) in
                         let invitation = invitations.first
                         XCTAssertEqual(invitation?.from.id, user0.id)
-                        user1.invitations.dataSource().onCompleted({ (_, invitations) in
+                        user1.wasInvitedInvitations.dataSource().onCompleted({ (_, invitations) in
                             let invitation = invitations.first
                             XCTAssertEqual(invitation?.to.id, user1.id)
                             expectation.fulfill()
@@ -180,29 +228,34 @@ class SocialbaseTests: XCTestCase {
             user1.save { (_, _) in
                 let request: Test.FollowRequest = Test.FollowRequest(fromID: user0.id, toID: user1.id)
                 request.save { (_, _) in
-                    Test.FollowRequest.get(user0.id, block: { (request, error) in
-                        XCTAssertEqual(request?.from.id, user0.id)
-                        XCTAssertEqual(request?.to.id, user1.id)
-                        XCTAssertEqual(request?.status, Status.none.rawValue)
-                        request?.approve { _ in
-                            Test.FollowRequest.get(user0.id, block: { (invitation, error) in
-                                XCTAssertEqual(request?.from.id, user0.id)
-                                XCTAssertEqual(request?.to.id, user1.id)
-                                XCTAssertEqual(request?.status, Status.approved.rawValue)
-                                user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
-                                    let user: User = users.first!
-                                    XCTAssertEqual(user.id, user0.id)
-                                    user0.following.query.dataSource().onCompleted({ (snapshot, users) in
+                    Test.FollowRequest
+                        .where("from", isEqualTo: user0.id)
+                        .where("to", isEqualTo: user1.id)
+                        .get(completion: { (snapshot, _) in
+                            let document = snapshot?.documents.first
+                            let request: Test.FollowRequest = Test.FollowRequest(snapshot: document!)!
+                            XCTAssertEqual(request.from.id, user0.id)
+                            XCTAssertEqual(request.to.id, user1.id)
+                            XCTAssertEqual(request.of.id, user0.id)
+                            request.approve { _ in
+                                Test.FollowRequest.get(request.id, block: { (request, error) in
+                                    XCTAssertEqual(request?.from.id, user0.id)
+                                    XCTAssertEqual(request?.to.id, user1.id)
+                                    XCTAssertEqual(request?.status, Status.approved.rawValue)
+                                    user1.followers.query.dataSource().onCompleted({ (snapshot, users) in
                                         let user: User = users.first!
-                                        XCTAssertEqual(user.id, user1.id)
-                                        user0.delete()
-                                        user1.delete()
-                                        expectation.fulfill()
+                                        XCTAssertEqual(user.id, user0.id)
+                                        user0.following.query.dataSource().onCompleted({ (snapshot, users) in
+                                            let user: User = users.first!
+                                            XCTAssertEqual(user.id, user1.id)
+                                            user0.delete()
+                                            user1.delete()
+                                            expectation.fulfill()
+                                        }).get()
                                     }).get()
-                                }).get()
-                            })
-                        }
-                    })
+                                })
+                            }
+                        })
                 }
             }
         }
@@ -220,21 +273,61 @@ class SocialbaseTests: XCTestCase {
             user1.save { (_, _) in
                 let request: Test.FollowRequest = Test.FollowRequest(fromID: user0.id, toID: user1.id)
                 request.save { (_, _) in
-                    Test.FollowRequest.get(user0.id, block: { (request, error) in
-                        XCTAssertEqual(request?.from.id, user0.id)
-                        XCTAssertEqual(request?.to.id, user1.id)
-                        XCTAssertEqual(request?.status, Status.none.rawValue)
-                        request?.reject { _ in
-                            Test.FollowRequest.get(user0.id, block: { (invitation, error) in
-                                XCTAssertEqual(request?.from.id, user0.id)
-                                XCTAssertEqual(request?.to.id, user1.id)
-                                XCTAssertEqual(request?.status, Status.rejected.rawValue)
-                                user0.delete()
-                                user1.delete()
-                                expectation.fulfill()
-                            })
-                        }
-                    })
+                    Test.FollowRequest
+                        .where("from", isEqualTo: user0.id)
+                        .where("to", isEqualTo: user1.id)
+                        .get(completion: { (snapshot, _) in
+                            let document = snapshot?.documents.first
+                            let request: Test.FollowRequest = Test.FollowRequest(snapshot: document!)!
+                            XCTAssertEqual(request.from.id, user0.id)
+                            XCTAssertEqual(request.to.id, user1.id)
+                            XCTAssertEqual(request.of.id, user0.id)
+                            request.reject { _ in
+                                Test.FollowRequest.get(request.id, block: { (request, error) in
+                                    XCTAssertEqual(request?.from.id, user0.id)
+                                    XCTAssertEqual(request?.to.id, user1.id)
+                                    XCTAssertEqual(request?.status, Status.rejected.rawValue)
+                                    user0.delete()
+                                    user1.delete()
+                                    expectation.fulfill()
+                                })
+                            }
+                        })
+                }
+            }
+        }
+        self.wait(for: [expectation], timeout: 10)
+    }
+
+    func testFollowableWhenRequestCancelled() {
+        let expectation: XCTestExpectation = XCTestExpectation()
+        let user0: User = User()
+        let user1: User = User()
+        user0.name = "user0"
+        user0.type = UserType.organization.rawValue
+        user1.name = "user1"
+        user0.save { (_, _) in
+            user1.save { (_, _) in
+                let request: Test.FollowRequest = Test.FollowRequest(fromID: user0.id, toID: user1.id)
+                request.save { (_, _) in
+                    Test.FollowRequest
+                        .where("from", isEqualTo: user0.id)
+                        .where("to", isEqualTo: user1.id)
+                        .get(completion: { (snapshot, _) in
+                            let document = snapshot?.documents.first
+                            let request: Test.FollowRequest = Test.FollowRequest(snapshot: document!)!
+                            XCTAssertEqual(request.from.id, user0.id)
+                            XCTAssertEqual(request.to.id, user1.id)
+                            XCTAssertEqual(request.of.id, user0.id)
+                            request.cancel { _ in
+                                Test.FollowRequest.get(user0.id, block: { (invitation, error) in
+                                    XCTAssertNil(invitation, "Cancelled")
+                                    user0.delete()
+                                    user1.delete()
+                                    expectation.fulfill()
+                                })
+                            }
+                        })
                 }
             }
         }

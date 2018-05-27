@@ -22,27 +22,56 @@ public enum UserType: String {
     case organization   = "rganization"
 }
 
-public typealias Socialbase = Organizable & Invitable & Followable & FollowRequestable
+public typealias Socialbase = Organizable & Issuable & Invitable & Followable & FollowRequestable
 
 // MARK: - Request
 
 /// Protocol to which the request document should conform.
 public protocol RequestProtocol: Document {
     associatedtype Element: Document
+    associatedtype Subject: Document
     var status: String { get set }
+    var of: Relation<Subject> { get set }
     var from: Relation<Element> { get set }
     var to: Relation<Element> { get set }
     var message: String? { get set }
-    init(fromID: String, toID: String)
+
+    /// init
+    init(fromID: String, toID: String, ofID: String)
+
+    /// This function approves the invitation.
+    func approve(_ block: ((Error?) -> Void)?)
+
+    /// This function rejects the invitation.
+    func reject(_ block: ((Error?) -> Void)?)
+
+    /// Cancel the invitation.
+    func cancel(_ block: ((Error?) -> Void)?)
 }
 
 public extension RequestProtocol {
 
-    public init(fromID: String, toID: String) {
-        self.init(id: fromID)
+    public init(fromID: String, toID: String, ofID: String) {
+        self.init()
         self.status = Status.none.rawValue
         self.from.set(Element(id: fromID, value: [:]))
         self.to.set(Element(id: toID, value: [:]))
+        self.of.set(Subject(id: ofID, value: [:]))
+    }
+
+    public func cancel(_ block: ((Error?) -> Void)? = nil) {
+        self.delete(block)
+    }
+}
+
+public extension RequestProtocol where Self: Object, Subject == Element {
+
+    public init(fromID: String, toID: String) {
+        self.init()
+        self.status = Status.none.rawValue
+        self.from.set(Element(id: fromID, value: [:]))
+        self.to.set(Element(id: toID, value: [:]))
+        self.of.set(Subject(id: fromID, value: [:]))
     }
 }
 
@@ -50,42 +79,61 @@ public extension RequestProtocol {
 
 /// Protocol to which an organizable Document should conform.
 public protocol Organizable: Document {
+
+    /// User's name
     var name: String { get set }
+
+    /// User type
     var type: String { get set }
+
+    /// Users belonging to the organization
     var peoples: ReferenceCollection<Self> { get }
+
+    /// Organization to which the user belongs
     var organizations: ReferenceCollection<Self> { get }
 }
 
-public protocol InvitationProtocol: RequestProtocol where Element: Organizable {
+/// Invitation protocol.
+public protocol InvitationProtocol: RequestProtocol { }
 
+/// Make it compliant with issuable Subject.
+public protocol Issuable: Document {
+    associatedtype Invitation: InvitationProtocol
+    var issuedInvitations: DataSource<Invitation>.Query { get }
+}
+
+extension Issuable {
+    public var issuedInvitations: DataSource<Invitation>.Query {
+        return Invitation.query.where("of", isEqualTo: self.id)
+    }
 }
 
 /// The protocol that the document to be invited conforms to.
 public protocol Invitable: Document {
     associatedtype Invitation: InvitationProtocol
-    var invitations: DataSource<Invitation>.Query { get }
-    var issuedInvitations: DataSource<Invitation>.Query { get }
+    var invitedInvitations: DataSource<Invitation>.Query { get }
+    var wasInvitedInvitations: DataSource<Invitation>.Query { get }
 }
 
 extension Invitable {
-    public var invitations: DataSource<Invitation>.Query {
-        return Invitation.query.where("to", isEqualTo: self.id)
-    }
-    public var issuedInvitations: DataSource<Invitation>.Query {
+    public var invitedInvitations: DataSource<Invitation>.Query {
         return Invitation.query.where("from", isEqualTo: self.id)
+    }
+    public var wasInvitedInvitations: DataSource<Invitation>.Query {
+        return Invitation.query.where("to", isEqualTo: self.id)
     }
 }
 
-public extension InvitationProtocol where Self: Object {
+public extension InvitationProtocol where Self: Object, Element: Organizable, Subject: Organizable {
 
     public func approve(_ block: ((Error?) -> Void)? = nil) {
         self.status = Status.approved.rawValue
-        let organization: Element = Element(id: self.id, value: [:])
-        let user: Element = Element(id: self.to.id!, value: [:])
-        organization.peoples.insert(user)
-        user.organizations.insert(organization)
+        let from: Element = Element(id: self.from.id!, value: [:])
+        let to: Element = Element(id: self.to.id!, value: [:])
+        from.peoples.insert(to)
+        to.organizations.insert(from)
         let batch: WriteBatch = Firestore.firestore().batch()
-        organization.pack(.update, batch: batch)
+        from.pack(.update, batch: batch)
         self.update(batch, block: block)
     }
 
@@ -120,7 +168,7 @@ extension FollowRequestable {
     }
 }
 
-public protocol FollowRequestProtocol: RequestProtocol where Element: Followable {
+public protocol FollowRequestProtocol: RequestProtocol where Element: Followable, Element: FollowRequestable, Subject == Element {
 
 }
 

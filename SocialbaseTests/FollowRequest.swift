@@ -15,8 +15,10 @@ extension Test {
     @objcMembers
     class FollowRequest: Object, FollowRequestProtocol {
         typealias Element = User
+        typealias Subject = User
         dynamic var status: String = Status.none.rawValue
         dynamic var message: String?
+        dynamic var of: Relation<Subject> = .init()
         dynamic var to: Relation<Element> = .init()
         dynamic var from: Relation<Element> = .init()
     }
