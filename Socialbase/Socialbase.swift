@@ -19,7 +19,7 @@ public enum Status: String {
 public enum UserType: String {
     case none           = "none"
     case individual     = "individual"
-    case organization   = "rganization"
+    case organization   = "organization"
 }
 
 public typealias Socialbase = Organizable & Issuable & Invitable & Followable & FollowRequestable
