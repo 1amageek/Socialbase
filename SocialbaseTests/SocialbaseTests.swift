@@ -333,4 +333,46 @@ class SocialbaseTests: XCTestCase {
         }
         self.wait(for: [expectation], timeout: 10)
     }
+
+    func testFollowableWhenFollow() {
+        let expectation: XCTestExpectation = XCTestExpectation()
+        let user0: User = User()
+        let user1: User = User()
+        user0.name = "user0"
+        user0.type = UserType.organization.rawValue
+        user1.name = "user1"
+        user0.save { (_, _) in
+            user1.save { (_, _) in
+                user0.follow(from: user1, block: { (_, _) in
+                    user0.follow(from: user1, block: { (_, error) in
+                        if let error = error {
+                            XCTAssertNotNil(error)
+                        }
+                        expectation.fulfill()
+                    })
+                })
+            }
+        }
+        self.wait(for: [expectation], timeout: 10)
+    }
+
+    func testFollowableWhenUnfollow() {
+        let expectation: XCTestExpectation = XCTestExpectation()
+        let user0: User = User()
+        let user1: User = User()
+        user0.name = "user0"
+        user0.type = UserType.organization.rawValue
+        user1.name = "user1"
+        user0.save { (_, _) in
+            user1.save { (_, _) in
+                user0.unfollow(from: user1, block: { (_, error) in
+                    if let error = error {
+                        XCTAssertNotNil(error)
+                    }
+                    expectation.fulfill()
+                })
+            }
+        }
+        self.wait(for: [expectation], timeout: 10)
+    }
 }

@@ -191,88 +191,119 @@ public extension FollowRequestProtocol where Self: Object {
     }
 }
 
+public enum FollowableError: Error {
+    case alreadyExists
+    case doesNotExist
+}
+
 public extension Followable where Self: Object {
 
     public func follow(from user: Self, block: ((Any?, Error?) -> Void)? = nil) {
-        Firestore.firestore().runTransaction({ (transaction, errorPointer) -> Any? in
-
-            let me: DocumentSnapshot
-            let you: DocumentSnapshot
-            do {
-                try me = transaction.getDocument(self.reference)
-                try you = transaction.getDocument(user.reference)
-            } catch let fetchError as NSError {
-                errorPointer?.pointee = fetchError
-                return nil
+        self.followers.reference.document(user.id).getDocument { (snapshot, error) in
+            if let error = error {
+                block?(nil, error)
+                return
             }
+            if snapshot!.exists {
+                let error: NSError = NSError(
+                    domain: "AppErrorDomain",
+                    code: -1, userInfo: [
+                        NSLocalizedDescriptionKey: "\(user.id) Already existis"
+                    ])
+                block?(nil, error)
+            }
+            Firestore.firestore().runTransaction({ (transaction, errorPointer) -> Any? in
 
-            let followers = me.data()?["followersCount"] as? Int ?? 0
+                let me: DocumentSnapshot
+                let you: DocumentSnapshot
+                do {
+                    try me = transaction.getDocument(self.reference)
+                    try you = transaction.getDocument(user.reference)
+                } catch let fetchError as NSError {
+                    errorPointer?.pointee = fetchError
+                    return nil
+                }
 
-            let following = you.data()?["followingCount"] as? Int ?? 0
+                let followers = me.data()?["followersCount"] as? Int ?? 0
+                let following = you.data()?["followingCount"] as? Int ?? 0
 
-            transaction.updateData(["followersCount": followers + 1], forDocument: me.reference)
-            transaction.updateData(["followingCount": following + 1], forDocument: you.reference)
-            transaction.setData([
-                "createdAt": FieldValue.serverTimestamp(),
-                "updatedAt": FieldValue.serverTimestamp()
-                ], forDocument: self.followers.reference.document(user.id))
-            transaction.setData([
-                "createdAt": FieldValue.serverTimestamp(),
-                "updatedAt": FieldValue.serverTimestamp()
-                ], forDocument: user.following.reference.document(self.id))
+                transaction.updateData(["followersCount": followers + 1], forDocument: me.reference)
+                transaction.updateData(["followingCount": following + 1], forDocument: you.reference)
+                transaction.setData([
+                    "createdAt": FieldValue.serverTimestamp(),
+                    "updatedAt": FieldValue.serverTimestamp()
+                    ], forDocument: self.followers.reference.document(user.id))
+                transaction.setData([
+                    "createdAt": FieldValue.serverTimestamp(),
+                    "updatedAt": FieldValue.serverTimestamp()
+                    ], forDocument: user.following.reference.document(self.id))
 
-            return nil
-        }) { (object, error) in
-            block?(object, error)
+                return nil
+            }) { (object, error) in
+                block?(object, error)
+            }
         }
     }
 
     public func unfollow(from user: Self, block: ((Any?, Error?) -> Void)? = nil) {
-
-        Firestore.firestore().runTransaction({ (transaction, errorPointer) -> Any? in
-
-            let me: DocumentSnapshot
-            let you: DocumentSnapshot
-            do {
-                try me = transaction.getDocument(self.reference)
-                try you = transaction.getDocument(user.reference)
-            } catch let fetchError as NSError {
-                errorPointer?.pointee = fetchError
-                return nil
+        self.followers.reference.document(user.id).getDocument { (snapshot, error) in
+            if let error = error {
+                block?(nil, error)
+                return
             }
-
-            guard let followers = me.data()?["followersCount"] as? Int else {
-                let error = NSError(
+            if !snapshot!.exists {
+                let error: NSError = NSError(
                     domain: "AppErrorDomain",
-                    code: -1,
-                    userInfo: [
-                        NSLocalizedDescriptionKey: "Unable to retrieve population from snapshot \(me)"
-                    ]
-                )
-                errorPointer?.pointee = error
-                return nil
+                    code: -1, userInfo: [
+                        NSLocalizedDescriptionKey: "\(user.id) does not existis"
+                    ])
+                block?(nil, error)
             }
+            Firestore.firestore().runTransaction({ (transaction, errorPointer) -> Any? in
 
-            guard let following = you.data()?["followingCount"] as? Int else {
-                let error = NSError(
-                    domain: "AppErrorDomain",
-                    code: -1,
-                    userInfo: [
-                        NSLocalizedDescriptionKey: "Unable to retrieve population from snapshot \(me)"
-                    ]
-                )
-                errorPointer?.pointee = error
+                let me: DocumentSnapshot
+                let you: DocumentSnapshot
+                do {
+                    try me = transaction.getDocument(self.reference)
+                    try you = transaction.getDocument(user.reference)
+                } catch let fetchError as NSError {
+                    errorPointer?.pointee = fetchError
+                    return nil
+                }
+
+                guard let followers = me.data()?["followersCount"] as? Int else {
+                    let error = NSError(
+                        domain: "AppErrorDomain",
+                        code: -1,
+                        userInfo: [
+                            NSLocalizedDescriptionKey: "Unable to retrieve population from snapshot \(me)"
+                        ]
+                    )
+                    errorPointer?.pointee = error
+                    return nil
+                }
+
+                guard let following = you.data()?["followingCount"] as? Int else {
+                    let error = NSError(
+                        domain: "AppErrorDomain",
+                        code: -1,
+                        userInfo: [
+                            NSLocalizedDescriptionKey: "Unable to retrieve population from snapshot \(me)"
+                        ]
+                    )
+                    errorPointer?.pointee = error
+                    return nil
+                }
+
+                transaction.updateData(["followersCount": max(followers - 1, 0)], forDocument: me.reference)
+                transaction.updateData(["followingCount": max(following - 1, 0)], forDocument: you.reference)
+                transaction.deleteDocument(self.followers.reference.document(user.id))
+                transaction.deleteDocument(user.following.reference.document(self.id))
+
                 return nil
+            }) { (object, error) in
+                block?(object, error)
             }
-
-            transaction.updateData(["followersCount": max(followers - 1, 0)], forDocument: me.reference)
-            transaction.updateData(["followingCount": max(following - 1, 0)], forDocument: you.reference)
-            transaction.deleteDocument(self.followers.reference.document(user.id))
-            transaction.deleteDocument(user.following.reference.document(self.id))
-
-            return nil
-        }) { (object, error) in
-            block?(object, error)
         }
     }
 }
