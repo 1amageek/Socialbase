@@ -191,11 +191,6 @@ public extension FollowRequestProtocol where Self: Object {
     }
 }
 
-public enum FollowableError: Error {
-    case alreadyExists
-    case doesNotExist
-}
-
 public extension Followable where Self: Object {
 
     public func follow(from user: Self, block: ((Any?, Error?) -> Void)? = nil) {
