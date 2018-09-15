@@ -37,7 +37,7 @@ public protocol RequestProtocol: Document {
     var message: String? { get set }
 
     /// init
-    init(fromID: String, toID: String?, ofID: String)
+    init(fromID: String, toID: String?, ofID: String?)
 
     /// This function approves the invitation.
     func approve(_ block: ((Error?) -> Void)?)
