@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12C8B4D8214D1ED9008E2395 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 12C8B4D7214D1ED9008E2395 /* GoogleService-Info.plist */; };
 		12DFEEC8204156BE000EB3D3 /* Socialbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DFEEC7204156BE000EB3D3 /* Socialbase.swift */; };
 		12DFEED62041B80F000EB3D3 /* SocialbaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DFEED52041B80F000EB3D3 /* SocialbaseTests.swift */; };
 		12DFEED82041B80F000EB3D3 /* Socialbase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12E14D12204155C8002CFDEA /* Socialbase.framework */; };
@@ -16,7 +17,6 @@
 		12DFEEE9204273AF000EB3D3 /* FollowRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DFEEE8204273AF000EB3D3 /* FollowRequest.swift */; };
 		12E14D17204155C8002CFDEA /* Socialbase.h in Headers */ = {isa = PBXBuildFile; fileRef = 12E14D15204155C8002CFDEA /* Socialbase.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1DFF8ABC2877AFB188A3D6E2 /* Pods_SocialbaseTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 612FC01814E0B1A1FCE68EB8 /* Pods_SocialbaseTests.framework */; };
-		27B13A3E20FF287200FA4A6F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 27B13A3D20FF287100FA4A6F /* GoogleService-Info.plist */; };
 		70CAC28919558F0C14229D3B /* Pods_Socialbase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EEA75425C7CF2939432665D0 /* Pods_Socialbase.framework */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +31,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		12C8B4D7214D1ED9008E2395 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		12DFEEC7204156BE000EB3D3 /* Socialbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Socialbase.swift; sourceTree = "<group>"; };
 		12DFEED32041B80F000EB3D3 /* SocialbaseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SocialbaseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		12DFEED52041B80F000EB3D3 /* SocialbaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialbaseTests.swift; sourceTree = "<group>"; };
@@ -42,7 +43,6 @@
 		12E14D12204155C8002CFDEA /* Socialbase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Socialbase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		12E14D15204155C8002CFDEA /* Socialbase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Socialbase.h; sourceTree = "<group>"; };
 		12E14D16204155C8002CFDEA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		27B13A3D20FF287100FA4A6F /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		40A8133D9E5C8AB33FE2CA77 /* Pods-SocialbaseTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SocialbaseTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-SocialbaseTests/Pods-SocialbaseTests.release.xcconfig"; sourceTree = "<group>"; };
 		612FC01814E0B1A1FCE68EB8 /* Pods_SocialbaseTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SocialbaseTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8702CB0C856E648AB7946B88 /* Pods-SocialbaseTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SocialbaseTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SocialbaseTests/Pods-SocialbaseTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -75,7 +75,7 @@
 		12DFEED42041B80F000EB3D3 /* SocialbaseTests */ = {
 			isa = PBXGroup;
 			children = (
-				27B13A3D20FF287100FA4A6F /* GoogleService-Info.plist */,
+				12C8B4D7214D1ED9008E2395 /* GoogleService-Info.plist */,
 				12DFEED52041B80F000EB3D3 /* SocialbaseTests.swift */,
 				12DFEEE02041B8C0000EB3D3 /* User.swift */,
 				12DFEEE22041C0A3000EB3D3 /* Invitation.swift */,
@@ -233,7 +233,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27B13A3E20FF287200FA4A6F /* GoogleService-Info.plist in Resources */,
+				12C8B4D8214D1ED9008E2395 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -272,9 +272,9 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-SocialbaseTests/Pods-SocialbaseTests-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/BoringSSL/openssl.framework",
+				"${BUILT_PRODUCTS_DIR}/BoringSSL-GRPC/openssl.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
-				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC/GRPCClient.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC-Core/grpc.framework",
@@ -287,7 +287,7 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/openssl.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GRPCClient.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/grpc.framework",

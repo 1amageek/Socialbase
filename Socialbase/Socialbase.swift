@@ -37,7 +37,7 @@ public protocol RequestProtocol: Document {
     var message: String? { get set }
 
     /// init
-    init(fromID: String, toID: String, ofID: String)
+    init(fromID: String, toID: String?, ofID: String)
 
     /// This function approves the invitation.
     func approve(_ block: ((Error?) -> Void)?)
@@ -51,11 +51,13 @@ public protocol RequestProtocol: Document {
 
 public extension RequestProtocol {
 
-    public init(fromID: String, toID: String, ofID: String) {
+    public init(fromID: String, toID: String? = nil, ofID: String) {
         self.init()
         self.status = Status.none.rawValue
         self.from.set(Element(id: fromID, value: [:]))
-        self.to.set(Element(id: toID, value: [:]))
+        if let toID: String = toID {
+            self.to.set(Element(id: toID, value: [:]))
+        }
         self.of.set(Subject(id: ofID, value: [:]))
     }
 
