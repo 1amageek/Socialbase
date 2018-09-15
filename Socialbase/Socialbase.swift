@@ -51,14 +51,16 @@ public protocol RequestProtocol: Document {
 
 public extension RequestProtocol {
 
-    public init(fromID: String, toID: String? = nil, ofID: String) {
+    public init(fromID: String, toID: String? = nil, ofID: String? = nil) {
         self.init()
         self.status = Status.none.rawValue
         self.from.set(Element(id: fromID, value: [:]))
         if let toID: String = toID {
             self.to.set(Element(id: toID, value: [:]))
         }
-        self.of.set(Subject(id: ofID, value: [:]))
+        if let ofID: String = ofID {
+            self.of.set(Subject(id: ofID, value: [:]))
+        }
     }
 
     public func cancel(_ block: ((Error?) -> Void)? = nil) {
