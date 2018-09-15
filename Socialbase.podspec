@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "Socialbase"
-  s.version      = "0.4.2"
+  s.version      = "0.4.3"
   s.summary      = "Firestore Social framework"
   s.description  = <<-DESC
 Socialbase is a framework for building SNS in Cloud Firestore.
