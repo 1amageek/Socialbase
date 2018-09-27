@@ -55,7 +55,7 @@ class SocialbaseTests: XCTestCase {
                             XCTAssertEqual(invitation.from.id, user0.id)
                             XCTAssertEqual(invitation.to.id, user1.id)
                             XCTAssertEqual(invitation.of.id, user0.id)
-                            invitation.approve { _ in
+                            invitation.approve { _, _ in
                                 Test.Invitation.get(invitation.id, block: { (invitation, error) in
                                     XCTAssertEqual(invitation?.from.id, user0.id)
                                     XCTAssertEqual(invitation?.to.id, user1.id)
@@ -237,7 +237,7 @@ class SocialbaseTests: XCTestCase {
                             XCTAssertEqual(request.from.id, user0.id)
                             XCTAssertEqual(request.to.id, user1.id)
                             XCTAssertEqual(request.of.id, user0.id)
-                            request.approve { _ in
+                            request.approve { _, _ in
                                 Test.FollowRequest.get(request.id, block: { (request, error) in
                                     XCTAssertEqual(request?.from.id, user0.id)
                                     XCTAssertEqual(request?.to.id, user1.id)

@@ -40,7 +40,7 @@ public protocol RequestProtocol: Document {
     init(fromID: String, toID: String?, ofID: String?)
 
     /// This function approves the invitation.
-    func approve(_ block: ((Error?) -> Void)?)
+    func approve(_ block: ((Any?, Error?) -> Void)?)
 
     /// This function rejects the invitation.
     func reject(_ block: ((Error?) -> Void)?)
@@ -130,7 +130,7 @@ extension Invitable {
 
 public extension InvitationProtocol where Self: Object, Element: Organizable, Subject: Organizable {
 
-    public func approve(_ block: ((Error?) -> Void)? = nil) {
+    public func approve(_ block: ((Any?, Error?) -> Void)? = nil) {
         self.status = Status.approved.rawValue
         let from: Element = Element(id: self.from.id!, value: [:])
         let to: Element = Element(id: self.to.id!, value: [:])
@@ -138,7 +138,9 @@ public extension InvitationProtocol where Self: Object, Element: Organizable, Su
         to.organizations.insert(from)
         let batch: WriteBatch = Firestore.firestore().batch()
         from.pack(.update, batch: batch)
-        self.update(batch, block: block)
+        self.update(batch) { error in
+            block?(nil, error)
+        }
     }
 
     public func reject(_ block: ((Error?) -> Void)? = nil) {
@@ -178,7 +180,7 @@ public protocol FollowRequestProtocol: RequestProtocol where Element: Followable
 
 public extension FollowRequestProtocol where Self: Object {
 
-    public func approve(_ block: ((Error?) -> Void)? = nil) {
+    public func approve(_ block: ((Any?, Error?) -> Void)? = nil) {
         self.status = Status.approved.rawValue
         let follower: Element = Element(id: self.from.id!, value: [:])
         let followee: Element = Element(id: self.to.id!, value: [:])
@@ -186,7 +188,9 @@ public extension FollowRequestProtocol where Self: Object {
         followee.followers.insert(follower)
         let batch: WriteBatch = Firestore.firestore().batch()
         follower.pack(.update, batch: batch)
-        self.update(batch, block: block)
+        self.update(batch) { error in
+            block?(nil, error)
+        }
     }
 
     public func reject(_ block: ((Error?) -> Void)? = nil) {
